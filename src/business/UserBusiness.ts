@@ -54,14 +54,14 @@ export class UserBusiness {
 
     }
 
-    public async bandSignup(name: string, nickname: string, description: string, email: string, password: string, isApproved: boolean, role: string) {
+    public async bandSignup(name: string, nickname: string, description: string, email: string, password: string, role: string) {
         const idGenerator = new IdGenerator()
         const id = idGenerator.generatorId()
 
         const hashManager = new HashManager()
         const hashPassword = await hashManager.hash(password)
 
-        const band = new User(id, name, nickname, description, email, hashPassword, isApproved, role)
+        const band = new User(id, name, nickname, description, email, hashPassword, role)
 
         const userDatabase = new UserDatabase()
         await userDatabase.createUserBand(band)
@@ -95,6 +95,6 @@ export class UserBusiness {
         const bandData = authenticator.verify(token)
 
         const userDatabase = new UserDatabase()
-        const band = await userDatabase.getApprovedBands(token)
+        await userDatabase.getApprovedBands(token)
     }
 }
