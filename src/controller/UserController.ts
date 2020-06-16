@@ -1,110 +1,54 @@
 import { Request, Response } from "express";
 import { UserBusiness } from '../business/UserBusiness'
 import { Authenticator } from '../services/Authenticator'
+import { UserDatabase } from "../data/UserDatabase";
+import { BaseDatabase } from "../data/BaseDatabase";
+import { HashManager } from "../services/HashManager";
+import { IdGenerator } from "../services/IdGenerator";
 
 
 export class UserController {
+    private static UserBusiness = new UserBusiness(
+        new UserDatabase(),
+        new HashManager(),
+        new Authenticator(),
+        new IdGenerator()
+    );
 
-    async signup(req: Request, res: Response) {
+    public async signup(req: Request, res: Response) {
+        const {
+            name,
+            email,
+            nickname,
+            password,
+            role,
+        } = req.body
         try {
-            const userBusiness = new UserBusiness()
-            const {
-                name,
-                nickname,
-                email,
-                password,
-                role,
-            } = req.body
+            const result = await UserController.UserBusiness.signup(name, email, nickname, password, role)
 
-            if (
-                !email || email === "" ||
-                !name || name === "" ||
-                !nickname || nickname === "" ||
-                !password || password === ""
-            ) {
-                throw new Error("Parâmetros Inválidos")
-            }
-
-            if(password.length < 6){
-                throw new Error("A senha deverá ter no mínimo 6 caracteres")
-            }
-
-            if(email.indexOf("@") === -1){
-                throw new Error("Email inválido")
-            }
-
-            const result = await userBusiness.signup(name, nickname, email, password, role)
-
-            const authenticator = new Authenticator()
-
-            const acessToken = authenticator.generationToken(
-                {
-                    id: result.id,
-                    role: result.role
-                },
-                process.env.ACCESS_TOKEN_EXPIRES_IN
+            res.status(200).send(
+                result
             )
-
-            res.status(200).send({
-                acessToken
-            })
-
         } catch (err) {
             res.status(400).send({
                 error: err.message
             })
         }
+        await BaseDatabase.destroyConnection()
     }
 
     async signupAdmin(req: Request, res: Response) {
+        const {
+            name,
+            nickname,
+            email,
+            password,
+            role,
+        } = req.body
         try {
-            const token = req.headers.authorization as string
-
-            const userBusiness = new UserBusiness()
-            const {
-                name,
-                nickname,
-                email,
-                password,
-                role,
-            } = req.body
-
-            if (
-                !email || email === "" ||
-                !name || name === "" ||
-                !nickname || nickname === "" ||
-                !password || password === ""
-            ) {
-                throw new Error("Parâmetros Inválidos")
-            }
-
-            if(password.length < 10){
-                throw new Error("A senha deverá ter no mínimo 10 caracteres")
-            }
-
-            if(email.indexOf("@") === -1){
-                throw new Error("Email inválido")
-            }
-
-            const result = await userBusiness.signupAdmin(name, nickname, email, password, role)
-
-            const authenticator = new Authenticator()
-            const userData = authenticator.verify(token)
-
-            if(userData.role !== "ADMIN" || "admin"){
-                throw new Error("Somente administradores podem acessar")
-            }   
-
-            const acessToken = authenticator.generationToken(
-                {
-                    id: result.id,
-                    role: result.role
-                },
-                process.env.ACCESS_TOKEN_EXPIRES_IN
-            )
-
+            const result = await UserController.UserBusiness.signupAdmin(name, nickname, email, password, role)
             res.status(200).send({
-                acessToken
+                result
             })
 
         } catch (err) {
@@ -118,30 +62,10 @@ export class UserController {
         try {
             const { nickname, email, password } = req.body
 
-            if (
-                !nickname || nickname === "" ||
-                !email || email === "" ||
-                !password || password === "" 
-            ) {
-                throw new Error("Parâmetros Inválidos")
-            }
-
-            const userBusiness = new UserBusiness()
-            const result = await userBusiness.login(nickname, email, password)
-
-            const authenticator = new Authenticator()
-
-            const acessToken = authenticator.generationToken(
-                {
-                    id: result.id,
-                    role: result.role
-                },
-                process.env.ACCESS_TOKEN_EXPIRES_IN
-            )
-
+            const result = await UserController.UserBusiness.login(nickname, email, password)
 
             res.status(200).send({
-                acessToken
+                result
             })
 
         } catch (err) {
@@ -152,49 +76,29 @@ export class UserController {
     }
 
     async bandSignup(req: Request, res: Response) {
+        const {
+            name,
+            email,
+            nickname,
+            password,
+            description
+        } = req.body
         try {
-            const bandBusiness = new UserBusiness()
-            const {
-                name,
-                nickname,
-                email,
-                description,
-                password,
-                isApproved,
-                role
-            } = req.body
-
-            if (
-                !email || email === "" ||
-                !name || name === "" ||
-                !nickname || nickname === "" ||
-                !password || password === ""
-            ) {
-                throw new Error("Parâmetros Inválidos")
-            }
-            if (password.length < 6) {
-                throw new Error("A senha deverá ter no mínimo 6 caracteres")
-            }
-
-            if (email.indexOf("@") === -1) {
-                throw new Error("Email inválido")
-            }
+            await UserController.UserBusiness.bandSignup(name, email, nickname, password, description)
             res.status(200).send({
                 message: "Aguarde para ser aprovado"
             })
-
         } catch (err) {
             res.status(400).send({
                 error: err.message
             })
         }
+        
     }
     async getApprovedBand(req: Request, res: Response) {
         const token = req.headers.authorization as string;
         try {
-            const bandBusiness = new UserBusiness()
-            const band = await bandBusiness.getApprovedBands(token)
-
+            const band = await UserController.UserBusiness.getApprovedBands(token)
             res.status(200).send({
                 band
             })
@@ -208,9 +112,7 @@ export class UserController {
         const token = req.headers.authorization as string;
         const { id } = req.body
         try {
-            const bandBusiness = new UserBusiness()
-            const band = await bandBusiness.approvesBand(id, token)
-
+            const band = await UserController.UserBusiness.approvesBand(id, token)
             res.status(200).send({
                 band
             })

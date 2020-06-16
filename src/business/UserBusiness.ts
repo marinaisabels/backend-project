@@ -1,27 +1,81 @@
 import { IdGenerator } from '../services/IdGenerator'
 import { HashManager } from '../services/HashManager'
 import { UserDatabase } from '../data/UserDatabase'
-import { User } from '../model/User'
+import { User, UserRole, stringToUserRole } from '../model/User'
 import { Authenticator } from '../services/Authenticator'
 
 export class UserBusiness {
+    constructor(
+        private userDatabase: UserDatabase,
+        private hashManager: HashManager,
+        private authenticator: Authenticator,
+        private idGenerator: IdGenerator
+    ) { }
+    public async signup(name: string, email: string, nickname: string, password: string, role: UserRole) {
 
-    public async signup(name: string, nickname: string, email: string, password: string, role: string) {
+        if (
+            !name ||
+            !email ||
+            !nickname ||
+            !password
+        ) {
+            throw new Error("Parâmetros Inválidos")
+        }
+
+        if (password.length < 6) {
+            throw new Error("A senha deverá ter no mínimo 6 caracteres")
+        }
+
+        if (email.indexOf("@") === -1) {
+            throw new Error("Email inválido")
+        }
+
         const idGenerator = new IdGenerator()
         const id = idGenerator.generatorId()
 
         const hashManager = new HashManager()
         const hashPassword = await hashManager.hash(password)
 
-        const user = new User(id, name, nickname, email, hashPassword, role)
+        const user = new User(id, name, email, nickname, hashPassword, role)
 
         const userDatabase = new UserDatabase()
         await userDatabase.createListenerUserAndAdmin(user)
 
-        return { id: id, role: role }
+        const authenticator = new Authenticator()
+        const acessToken = authenticator.generationToken(
+            {
+                id,
+                role
+            },
+            process.env.ACCESS_TOKEN_EXPIRES_IN
+        )
+
+        return {
+            acessToken
+        }
     }
 
-    public async signupAdmin(name: string, nickname: string, email: string, password: string, role: string) {
+    public async signupAdmin(name: string, nickname: string, email: string, password: string, token: string) {
+
+        if (
+            !email ||
+            !name ||
+            !nickname ||
+            !password
+        ) {
+            throw new Error("Parâmetros Inválidos")
+        }
+
+        if (password.length < 10) {
+            throw new Error("A senha deverá ter no mínimo 10 caracteres")
+        }
+
+        if (email.indexOf("@") === -1) {
+            throw new Error("Email inválido")
+        }
+
+
+        const role = UserRole.ADMIN
         const idGenerator = new IdGenerator()
         const id = idGenerator.generatorId()
 
@@ -33,7 +87,22 @@ export class UserBusiness {
         const userDatabase = new UserDatabase()
         await userDatabase.createListenerUserAndAdmin(user)
 
-        return { id: id, role: role }
+        const authenticator = new Authenticator()
+
+        if (user.getRole() !== UserRole.ADMIN) {
+            throw new Error("Só administradores podem acessar")
+        }
+        const acessToken = authenticator.generationToken(
+            {
+                id,
+                role
+            },
+            process.env.ACCESS_TOKEN_EXPIRES_IN
+        )
+
+        return {
+            acessToken
+        }
     }
 
     public async login(nickname: string, email: string, password: string) {
@@ -43,6 +112,22 @@ export class UserBusiness {
         if (!user) {
             throw new Error("Parâmetros incorretos !")
         }
+        if (
+            !nickname ||
+            !email ||
+            !password
+        ) {
+            throw new Error("Parâmetros Inválidos")
+        }
+        const authenticator = new Authenticator()
+
+        const acessToken = authenticator.generationToken(
+            {
+                id: user.getId(),
+                role: user.getRole()
+            },
+            process.env.ACCESS_TOKEN_EXPIRES_IN
+        )
 
         const hashManager = new HashManager()
         const comparePasswords = await hashManager.compare(password, user.getPassword())
@@ -50,26 +135,42 @@ export class UserBusiness {
         if (!comparePasswords) {
             throw new Error("Informações inválidas")
         }
-        return { id: user.getId(), role: user.getRole() }
+        return { acessToken }
 
     }
 
-    public async bandSignup(name: string, nickname: string, description: string, email: string, password: string, role: string) {
+    public async bandSignup(name: string, email: string, nickname: string, password: string, description: string) {
+
+        if (
+            !email ||
+            !name ||
+            !nickname ||
+            !password
+        ) {
+            throw new Error("Parâmetros Inválidos")
+        }
+        if (password.length < 6) {
+            throw new Error("A senha deverá ter no mínimo 6 caracteres")
+        }
+
+        if (email.indexOf("@") === -1) {
+            throw new Error("Email inválido")
+        }
+
+        const role = UserRole.BAND
         const idGenerator = new IdGenerator()
         const id = idGenerator.generatorId()
 
         const hashManager = new HashManager()
         const hashPassword = await hashManager.hash(password)
 
-        const band = new User(id, name, nickname, description, email, hashPassword, role)
+        const band = new User(id, name, email, nickname, hashPassword, stringToUserRole(role), description)
 
         const userDatabase = new UserDatabase()
         await userDatabase.createUserBand(band)
-
-        return { id: id }
     }
-    public async getApprovedBands(token: string) {
 
+    public async getApprovedBands(token: string) {
         const authenticator = new Authenticator()
         const bandData = authenticator.verify(token)
 
@@ -90,11 +191,27 @@ export class UserBusiness {
             }
         })
     }
-    async approvesBand(id: string, token: string) {
+    async approvesBand(id: string, token: string){
         const authenticator = new Authenticator()
         const bandData = authenticator.verify(token)
 
         const userDatabase = new UserDatabase()
-        await userDatabase.getApprovedBands(token)
+        const user = await userDatabase.getApproves(bandData.id)
+
+        if (!user) {
+            throw new Error("Usuário não encontrado");
+        }
+        if (user.getRole() !== UserRole.ADMIN) {
+            throw new Error("Acesso apenas para administradores")
+        }
+
+        const band = await userDatabase.getApproves(id)
+        if (!band) {
+            throw new Error("Band não encontrada");
+        }
+        if (band.getApproves() == true) {
+            throw new Error("Banda Aprovada!")
+        }
+
     }
 }

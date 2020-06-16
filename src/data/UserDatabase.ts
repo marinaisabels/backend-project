@@ -2,11 +2,20 @@ import { BaseDatabase } from './BaseDatabase'
 import { User } from '../model/User'
 
 export class UserDatabase extends BaseDatabase {
-    public static TABLE_NAME = 'SpotUser'
+    public static TABLE_NAME: string = 'SpotUser'
 
     private toModel(dbResult?: any): User | undefined {
         return (
-            dbResult && new User(dbResult.id, dbResult.email, dbResult.name, dbResult.password, dbResult.role, dbResult.description, dbResult.isApproved)
+            dbResult && new User(
+                dbResult.id,
+                dbResult.name,
+                dbResult.email,
+                dbResult.nickname,
+                dbResult.password,
+                dbResult.role,
+                dbResult.description,
+                dbResult.isApproved
+            )
         )
     }
 
@@ -15,8 +24,9 @@ export class UserDatabase extends BaseDatabase {
         await this.connection()
             .insert({
                 id: userData?.getId(),
-                email: userData?.getEmail(),
                 name: userData?.getName(),
+                email: userData?.getEmail(),
+                nickname: userData?.getNickname(),
                 password: userData?.getPassword(),
                 role: userData?.getRole()
             })
@@ -27,11 +37,12 @@ export class UserDatabase extends BaseDatabase {
         await this.connection()
             .insert({
                 id: userData?.getId(),
-                email: userData?.getEmail(),
                 name: userData?.getName(),
+                email: userData?.getEmail(),
                 password: userData?.getPassword(),
                 role: userData?.getRole(),
-                description: userData?.getDescription()
+                description: userData?.getDescription(),
+                isApproved: super.convertBooleanToTinyint(false)
             })
             .into(UserDatabase.TABLE_NAME)
     }
@@ -44,19 +55,19 @@ export class UserDatabase extends BaseDatabase {
 
         return this.toModel(result[0])
     }
-    public async getApprovedBands(role: string): Promise<User []> {
+    public async getApprovedBands(role: string): Promise<User[]> {
         const result = await this.connection().raw(`
           SELECT *
           FROM ${UserDatabase.TABLE_NAME}
           WHERE role = "${role}"`);
         return result[0]
-      }
-      public async getApproves(id: string): Promise<void> {
+    }
+    public async getApproves(id: string): Promise<any> {
         const result = await this.connection().raw(`
         UPDATE S${UserDatabase.TABLE_NAME}
         SET isApproved = 1
         Where id = "${id}"
         `)
         return result
-      }
+    }
 }
