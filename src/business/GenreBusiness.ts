@@ -37,4 +37,16 @@ export class GenreBusiness {
             throw new Error("Esse genêro foi adicionado")
         }
     }
+    public async getAllGenres(token:string) {
+        const authenticator = new Authenticator()
+        const genreData = authenticator.verify(token)
+
+        const userDatabase = new UserDatabase()
+        const user = await userDatabase.getUserById(genreData.id)
+        
+        const genreDatabase = new GenreDatabase()
+        const genre = await genreDatabase.getAllGenres()
+
+        return genre
+    }
 }

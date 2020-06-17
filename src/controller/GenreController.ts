@@ -27,4 +27,18 @@ export class GenreController {
             })
         }
     }
+    public async getAllGenres(req: Request, res: Response){
+        const token = req.headers.authorization as string;
+        try {
+            const genre = await GenreController.GenreBusiness.getAllGenres(token)
+            res.status(200).send({
+                genre
+            })
+        } catch (err) {
+            res.status(400).send({
+                error: err.message
+            })
+        }
+    }
+    
 }

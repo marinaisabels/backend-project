@@ -42,7 +42,7 @@ export class UserDatabase extends BaseDatabase {
                 password: userData?.getPassword(),
                 role: userData?.getRole(),
                 description: userData?.getDescription(),
-                isApproved: super.convertBooleanToTinyint(false)
+                isApproved: this.convertBooleanToTinyint(false)
             })
             .into(UserDatabase.TABLE_NAME)
     }
