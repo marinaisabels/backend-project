@@ -55,6 +55,13 @@ export class UserDatabase extends BaseDatabase {
 
         return this.toModel(result[0])
     }
+    public async getUserById(id: string): Promise<User | undefined> {
+        const result = await this.connection()
+            .select("*")
+            .from(UserDatabase.TABLE_NAME)
+            .where({ id })
+        return this.toModel(result[0])
+    }
     public async getApprovedBands(role: string): Promise<User[]> {
         const result = await this.connection().raw(`
           SELECT *
