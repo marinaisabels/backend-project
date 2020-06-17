@@ -2,7 +2,7 @@ import { BaseDatabase } from './BaseDatabase'
 import { User } from '../model/User'
 
 export class UserDatabase extends BaseDatabase {
-    public static TABLE_NAME: string = 'SpotUser'
+    public static TABLE_NAME: string = 'SpotUser';
 
     private toModel(dbResult?: any): User | undefined {
         return (
