@@ -1,0 +1,45 @@
+{
+  "name": "project",
+  "version": "1.0.0",
+  "description": "Projeto Backend Labenu Marina Isabel Projeto Final Backend Labenu ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "ts-node-dev ./src/index.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marinaisabels/backend-project.git"
+  },
+  "keywords": [
+    "Projeto",
+    "backend",
+    "Marina",
+    "Isabel"
+  ],
+  "author": "Marina Isabel",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/marinaisabels/backend-project/issues"
+  },
+  "homepage": "https://github.com/marinaisabels/backend-project#readme",
+  "dependencies": {
+    "@types/bcryptjs": "^2.4.2",
+    "@types/express": "4.17.0",
+    "@types/jsonwebtoken": "^8.3.9",
+    "@types/knex": "^0.16.1",
+    "@types/node": "^13.7.7",
+    "@types/uuid": "^7.0.3",
+    "bcryptjs": "^2.4.3",
+    "dotenv": "^8.2.0",
+    "express": "4.17.0",
+    "jsonwebtoken": "^8.5.1",
+    "knex": "^0.21.1",
+    "moment": "^2.26.0",
+    "mysql": "^2.18.1",
+    "ts-node": "^8.6.2",
+    "ts-node-dev": "^1.0.0-pre.44",
+    "typescript": "^3.8.3",
+    "uuid": "^8.0.0"
+  }
+}
