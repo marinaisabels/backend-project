@@ -22,7 +22,7 @@ export class GenreController {
                 message:"Criado com sucesso!"
             })
         }catch(err){
-            res.status(400).send({
+            res.status(err.statusCode || 400).send({
                 message: err.message
             })
         }
@@ -35,7 +35,7 @@ export class GenreController {
                 genre
             })
         } catch (err) {
-            res.status(400).send({
+            res.status(err.statusCode || 400).send({
                 error: err.message
             })
         }

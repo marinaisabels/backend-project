@@ -5,6 +5,9 @@ import { Authenticator } from "../services/Authenticator";
 import { AlbunsDatabase } from "../data/AlbunsDataBase";
 import { Music } from "../model/Music";
 import { UserRole } from "../model/User";
+import { InvalidInputError } from "../errors/InvalidInputError";
+import { NotFoundError } from "../errors/NotFoundError";
+import { GenericError } from "../errors/GenericError";
 ;
 
 export class MusicBusiness {
@@ -23,7 +26,7 @@ export class MusicBusiness {
             !albumId ||
             !token
         ){
-            throw new Error("Parâmetros inválidos")
+            throw new InvalidInputError("Parâmetros inválidos")
         }
 
         const authenticator = new Authenticator();
@@ -34,11 +37,11 @@ export class MusicBusiness {
         const userRole = UserRole.BAND
 
         if(!user){
-            throw new Error("Este usuário não existe")
+            throw new NotFoundError("Este usuário não existe")
         }
     
         if(!userRole){
-            throw new Error("Apenas bandas podem acessar")
+            throw new GenericError("Apenas bandas podem acessar")
         }
 
         const idGenerator = new IdGenerator();
