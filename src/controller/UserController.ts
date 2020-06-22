@@ -14,7 +14,6 @@ export class UserController {
         new Authenticator(),
         new IdGenerator()
     );
-
     public async signup(req: Request, res: Response) {
         const {
             name,
@@ -30,7 +29,7 @@ export class UserController {
                 result
             )
         } catch (err) {
-            res.status(400).send({
+            res.status(err.statusCode || 400).send({
                 error: err.message
             })
         }
@@ -52,12 +51,11 @@ export class UserController {
             })
 
         } catch (err) {
-            res.status(400).send({
+            res.status(err.statusCode || 400).send({
                 error: err.message
             })
         }
     }
-
     async login(req: Request, res: Response) {
         try {
             const { nickname, email, password } = req.body
@@ -69,12 +67,11 @@ export class UserController {
             })
 
         } catch (err) {
-            res.status(400).send({
+            res.status(err.statusCode || 400).send({
                 error: err.message
             })
         }
     }
-
     async bandSignup(req: Request, res: Response) {
         const {
             name,
@@ -89,7 +86,7 @@ export class UserController {
                 message: "Aguarde para ser aprovado"
             })
         } catch (err) {
-            res.status(400).send({
+            res.status(err.statusCode || 400).send({
                 error: err.message
             })
         }
@@ -103,7 +100,7 @@ export class UserController {
                 band
             })
         } catch (err) {
-            res.status(400).send({
+            res.status(err.statusCode || 400).send({
                 error: err.message
             })
         }
@@ -117,7 +114,7 @@ export class UserController {
                 band
             })
         } catch (err) {
-            res.status(400).send({
+            res.status(err.statusCode || 400).send({
                 error: err.message
             })
         }

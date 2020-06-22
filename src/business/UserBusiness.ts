@@ -3,6 +3,9 @@ import { HashManager } from '../services/HashManager'
 import { UserDatabase } from '../data/UserDatabase'
 import { User, UserRole, stringToUserRole } from '../model/User'
 import { Authenticator } from '../services/Authenticator'
+import { InvalidInputError } from '../errors/InvalidInputError'
+import { GenericError } from '../errors/GenericError'
+import { NotFoundError } from '../errors/NotFoundError'
 
 export class UserBusiness {
     constructor(
@@ -19,15 +22,15 @@ export class UserBusiness {
             !nickname ||
             !password
         ) {
-            throw new Error("Parâmetros Inválidos")
+            throw new InvalidInputError("Parâmetros Inválidos")
         }
 
         if (password.length < 6) {
-            throw new Error("A senha deverá ter no mínimo 6 caracteres")
+            throw new GenericError("A senha deverá ter no mínimo 6 caracteres")
         }
 
         if (email.indexOf("@") === -1) {
-            throw new Error("Email inválido")
+            throw new InvalidInputError("Email inválido")
         }
 
         const idGenerator = new IdGenerator()
@@ -63,15 +66,15 @@ export class UserBusiness {
             !nickname ||
             !password
         ) {
-            throw new Error("Parâmetros Inválidos")
+            throw new InvalidInputError("Parâmetros Inválidos")
         }
 
         if (password.length < 10) {
-            throw new Error("A senha deverá ter no mínimo 10 caracteres")
+            throw new GenericError("A senha deverá ter no mínimo 10 caracteres")
         }
 
         if (email.indexOf("@") === -1) {
-            throw new Error("Email inválido")
+            throw new InvalidInputError("Email inválido")
         }
 
 
@@ -90,7 +93,7 @@ export class UserBusiness {
         const authenticator = new Authenticator()
 
         if (user.getRole() !== UserRole.ADMIN) {
-            throw new Error("Só administradores podem acessar")
+            throw new GenericError("Só administradores podem acessar")
         }
         const acessToken = authenticator.generationToken(
             {
@@ -110,14 +113,14 @@ export class UserBusiness {
         const user = await userDataBase.getUserByEmailOrNickname(email, nickname)
 
         if (!user) {
-            throw new Error("Parâmetros incorretos !")
+            throw new InvalidInputError("Parâmetros incorretos !")
         }
         if (
             !nickname ||
             !email ||
             !password
         ) {
-            throw new Error("Parâmetros Inválidos")
+            throw new InvalidInputError("Parâmetros Inválidos")
         }
         const authenticator = new Authenticator()
 
@@ -133,7 +136,7 @@ export class UserBusiness {
         const comparePasswords = await hashManager.compare(password, user.getPassword())
 
         if (!comparePasswords) {
-            throw new Error("Informações inválidas")
+            throw new GenericError("Informações inválidas")
         }
         return { acessToken }
 
@@ -147,14 +150,14 @@ export class UserBusiness {
             !nickname ||
             !password
         ) {
-            throw new Error("Parâmetros Inválidos")
+            throw new InvalidInputError("Parâmetros Inválidos")
         }
         if (password.length < 6) {
-            throw new Error("A senha deverá ter no mínimo 6 caracteres")
+            throw new GenericError("A senha deverá ter no mínimo 6 caracteres")
         }
 
         if (email.indexOf("@") === -1) {
-            throw new Error("Email inválido")
+            throw new InvalidInputError("Email inválido")
         }
 
         const role = UserRole.BAND
@@ -175,7 +178,7 @@ export class UserBusiness {
         const bandData = authenticator.verify(token)
 
         if (bandData.role !== "ADMIN" || "admin") {
-            throw new Error("Acesso negado!")
+            throw new GenericError("Acesso negado!")
         }
 
         const userDatabase = new UserDatabase()
@@ -199,18 +202,18 @@ export class UserBusiness {
         const user = await userDatabase.getApproves(bandData.id)
 
         if (!user) {
-            throw new Error("Usuário não encontrado");
+            throw new NotFoundError("Usuário não encontrado");
         }
         if (user.getRole() !== UserRole.ADMIN) {
-            throw new Error("Acesso apenas para administradores")
+            throw new GenericError("Acesso apenas para administradores")
         }
 
         const band = await userDatabase.getApproves(id)
         if (!band) {
-            throw new Error("Band não encontrada");
+            throw new NotFoundError("Band não encontrada");
         }
         if (band.getApproves() == true) {
-            throw new Error("Banda Aprovada!")
+            throw new GenericError("Banda Aprovada!")
         }
 
     }
