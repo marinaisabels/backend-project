@@ -6,6 +6,9 @@ import { Authenticator } from "../services/Authenticator";
 import { UserRole } from "../model/User";
 import { Album } from "../model/Albuns";
 import { Genre } from "../model/Genre";
+import { InvalidInputError } from "../errors/InvalidInputError";
+import { GenericError } from "../errors/GenericError";
+import { NotFoundError } from "../errors/NotFoundError";
 
 
 export class AlbumBusiness {
@@ -26,7 +29,7 @@ export class AlbumBusiness {
             !allGenre ||
             !token
         ) {
-            throw new Error("Informações incompletas");
+            throw new InvalidInputError("Informações incompletas");
 
         }
 
@@ -34,7 +37,7 @@ export class AlbumBusiness {
         const user = await userDatabase.getUserById(userData.id)
 
         if (user?.getRole() !== UserRole.BAND) {
-            throw new Error("Apenas administradores podem acessar");
+            throw new GenericError("Apenas administradores podem acessar");
         }
 
         const idGenerator = new IdGenerator()
@@ -52,7 +55,7 @@ export class AlbumBusiness {
             if (result) {
                 await genreDatabase.createGenre(new Genre(id, genres))
             } else {
-                throw new Error("Não existe esse genêro")
+                throw new NotFoundError("Não existe esse genêro")
             }
         }
 
@@ -62,8 +65,7 @@ export class AlbumBusiness {
 
         const album = await albumDatabase.getAlbumByName(name)
         if (album) {
-            throw new Error("Esse album foi adicionado");
-
+            throw new GenericError("Esse album foi adicionado");
         }
 
     }
