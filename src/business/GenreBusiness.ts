@@ -4,6 +4,7 @@ import { IdGenerator } from "../services/IdGenerator";
 import { Authenticator } from "../services/Authenticator";
 import { UserRole } from "../model/User";
 import { Genre } from "../model/Genre";
+import { GenericError } from "../errors/GenericError";
 
 export class GenreBusiness {
     constructor(
@@ -21,7 +22,7 @@ export class GenreBusiness {
         const user = await userDatabase.getUserById(userData.id)
 
         if (user?.getRole() !== UserRole.ADMIN) {
-            throw new Error("Apenas administradores podem acessar")
+            throw new GenericError("Apenas administradores podem acessar")
         }
 
         const idGenerator = new IdGenerator()
@@ -34,7 +35,7 @@ export class GenreBusiness {
 
         const genre = await genreDatabase.getGenreByName(name)
         if (genre) {
-            throw new Error("Esse genêro foi adicionado")
+            throw new GenericError("Esse genêro foi adicionado")
         }
     }
     public async getAllGenres(token:string) {
