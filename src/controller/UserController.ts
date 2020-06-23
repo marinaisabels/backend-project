@@ -33,7 +33,6 @@ export class UserController {
                 error: err.message
             })
         }
-        await BaseDatabase.destroyConnection()
     }
 
     async signupAdmin(req: Request, res: Response) {

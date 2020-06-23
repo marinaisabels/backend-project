@@ -14,7 +14,7 @@ export class UserBusiness {
         private authenticator: Authenticator,
         private idGenerator: IdGenerator
     ) { }
-    public async signup(name: string, email: string, nickname: string, password: string, role: UserRole) {
+    public async signup(name: string, email: string, nickname: string, password: string, role: UserRole, description?: string) {
 
         if (
             !name ||
