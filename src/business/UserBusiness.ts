@@ -14,7 +14,7 @@ export class UserBusiness {
         private authenticator: Authenticator,
         private idGenerator: IdGenerator
     ) { }
-    public async signup(name: string, email: string, nickname: string, password: string, role: UserRole, description?: string) {
+    public async signup(name: string, email: string, nickname: string, password: string) {
 
         if (
             !name ||
@@ -33,13 +33,16 @@ export class UserBusiness {
             throw new InvalidInputError("Email inválido")
         }
 
+        const rolePayListener = UserRole.PAYLISTENER 
+        const roleNoListener = UserRole.NOPAYLISTENER
+
         const idGenerator = new IdGenerator()
         const id = idGenerator.generatorId()
 
         const hashManager = new HashManager()
         const hashPassword = await hashManager.hash(password)
 
-        const user = new User(id, name, email, nickname, hashPassword, role)
+        const user = new User(id, name, email, nickname, hashPassword, rolePayListener, roleNoListener)
 
         const userDatabase = new UserDatabase()
         await userDatabase.createListenerUserAndAdmin(user)
@@ -47,8 +50,7 @@ export class UserBusiness {
         const authenticator = new Authenticator()
         const acessToken = authenticator.generationToken(
             {
-                id,
-                role
+                id
             },
             process.env.ACCESS_TOKEN_EXPIRES_IN
         )
@@ -143,7 +145,6 @@ export class UserBusiness {
     }
 
     public async bandSignup(name: string, email: string, nickname: string, password: string, description: string) {
-
         if (
             !email ||
             !name ||
@@ -167,8 +168,8 @@ export class UserBusiness {
         const hashManager = new HashManager()
         const hashPassword = await hashManager.hash(password)
 
-        const band = new User(id, name, email, nickname, hashPassword, stringToUserRole(role), description)
-
+        const band = new User(id, name, email, nickname, hashPassword, role, description)
+        
         const userDatabase = new UserDatabase()
         await userDatabase.createUserBand(band)
     }
@@ -177,7 +178,7 @@ export class UserBusiness {
         const authenticator = new Authenticator()
         const bandData = authenticator.verify(token)
 
-        if (bandData.role !== "ADMIN" || "admin") {
+        if (bandData.role !== "ADMIN") {
             throw new GenericError("Acesso negado!")
         }
 

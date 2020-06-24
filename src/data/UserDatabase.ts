@@ -20,28 +20,27 @@ export class UserDatabase extends BaseDatabase {
     }
 
     public async createListenerUserAndAdmin(user: User): Promise<void> {
-        const userData = this.toModel(user)
         await this.connection()
             .insert({
-                id: userData?.getId(),
-                name: userData?.getName(),
-                email: userData?.getEmail(),
-                nickname: userData?.getNickname(),
-                password: userData?.getPassword(),
-                role: userData?.getRole()
+                id: user.getId(),
+                name: user.getName(),
+                email: user.getEmail(),
+                nickname: user.getNickname(),
+                password: user.getPassword(),
+                role: user.getRole()
             })
             .into(UserDatabase.TABLE_NAME)
     }
     public async createUserBand(user: User): Promise<void> {
-        const userData = this.toModel(user)
         await this.connection()
             .insert({
-                id: userData?.getId(),
-                name: userData?.getName(),
-                email: userData?.getEmail(),
-                password: userData?.getPassword(),
-                role: userData?.getRole(),
-                description: userData?.getDescription(),
+                id: user.getId(),
+                name: user.getName(),
+                email: user.getEmail(),
+                nickname: user.getNickname(),
+                password: user.getPassword(),
+                role: user.getRole(),
+                description: user.getDescription(),
                 isApproved: this.convertBooleanToTinyint(false)
             })
             .into(UserDatabase.TABLE_NAME)
