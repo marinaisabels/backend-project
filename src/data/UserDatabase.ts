@@ -1,5 +1,5 @@
 import { BaseDatabase } from './BaseDatabase'
-import { User } from '../model/User'
+import { User, UserRole } from '../model/User'
 
 export class UserDatabase extends BaseDatabase {
     public static TABLE_NAME: string = 'SpotUser';
@@ -18,7 +18,6 @@ export class UserDatabase extends BaseDatabase {
             )
         )
     }
-
     public async createListenerUserAndAdmin(user: User): Promise<void> {
         await this.connection()
             .insert({
@@ -61,16 +60,16 @@ export class UserDatabase extends BaseDatabase {
             .where({ id })
         return this.toModel(result[0])
     }
-    public async getApprovedBands(role: string): Promise<User[]> {
+    public async approvedBandByAdmin(role: string): Promise<User[]> {
         const result = await this.connection().raw(`
           SELECT *
           FROM ${UserDatabase.TABLE_NAME}
-          WHERE role = "${role}"`);
-        return result[0]
+          WHERE role = "${UserRole.BAND}"`);
+        return result[0].map((res:any) => this.toModel(res))
     }
-    public async getApproves(id: string): Promise<any> {
+    public async getBandsApproved(id: string): Promise<any> {
         const result = await this.connection().raw(`
-        UPDATE S${UserDatabase.TABLE_NAME}
+        UPDATE ${UserDatabase.TABLE_NAME}
         SET isApproved = 1
         Where id = "${id}"
         `)

@@ -1,7 +1,7 @@
 import { IdGenerator } from '../services/IdGenerator'
 import { HashManager } from '../services/HashManager'
 import { UserDatabase } from '../data/UserDatabase'
-import { User, UserRole, stringToUserRole } from '../model/User'
+import { User, UserRole } from '../model/User'
 import { Authenticator } from '../services/Authenticator'
 import { InvalidInputError } from '../errors/InvalidInputError'
 import { GenericError } from '../errors/GenericError'
@@ -60,7 +60,7 @@ export class UserBusiness {
         }
     }
 
-    public async signupAdmin(name: string, nickname: string, email: string, password: string, token: string) {
+    public async signupAdmin(name: string, email: string, nickname: string, password: string, token: string) {
 
         if (
             !email ||
@@ -87,7 +87,7 @@ export class UserBusiness {
         const hashManager = new HashManager()
         const hashPassword = await hashManager.hash(password)
 
-        const user = new User(id, name, nickname, email, hashPassword, role)
+        const user = new User(id, name, email, nickname, hashPassword, role)
 
         const userDatabase = new UserDatabase()
         await userDatabase.createListenerUserAndAdmin(user)
@@ -174,7 +174,7 @@ export class UserBusiness {
         await userDatabase.createUserBand(band)
     }
 
-    public async getApprovedBands(token: string) {
+    public async approvedBandByAdmin(token: string) {
         const authenticator = new Authenticator()
         const bandData = authenticator.verify(token)
 
@@ -183,10 +183,10 @@ export class UserBusiness {
         }
 
         const userDatabase = new UserDatabase()
-        const band = await userDatabase.getApprovedBands(token)
+        const band = await userDatabase.approvedBandByAdmin(token)
 
         return band.map(band => {
-            const isApproved = band.getApproved() === true ? true : false
+            const isApproved = band.getApproved() === true 
             return {
                 name: band.getName(),
                 email: band.getEmail(),
@@ -195,27 +195,26 @@ export class UserBusiness {
             }
         })
     }
-    async approvesBand(id: string, token: string){
+    async getApproved(id: string, token: string){
         const authenticator = new Authenticator()
         const bandData = authenticator.verify(token)
 
         const userDatabase = new UserDatabase()
-        const user = await userDatabase.getApproves(bandData.id)
+        const user = await userDatabase.getBandsApproved(bandData.id)
+        const userRole = UserRole.ADMIN
 
         if (!user) {
             throw new NotFoundError("Usuário não encontrado");
         }
-        if (user.getRole() !== UserRole.ADMIN) {
+        if (!userRole) {
             throw new GenericError("Acesso apenas para administradores")
         }
-
-        const band = await userDatabase.getApproves(id)
+        const band = await userDatabase.getBandsApproved(id)
         if (!band) {
             throw new NotFoundError("Band não encontrada");
         }
-        if (band.getApproves() == true) {
-            throw new GenericError("Banda Aprovada!")
+        if (band) {
+          return "Banda Aprovada!"
         }
-
     }
 }
