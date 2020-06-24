@@ -27,11 +27,11 @@ export class GenreDatabase extends BaseDatabase {
       return result[0]
     }
 
-    public async getGenreByName(name: string): Promise<Genre | undefined> {
+    public async getGenreById(id: string): Promise<Genre | any> {
         const result = await this.connection()
             .select("*")
             .from(GenreDatabase.TABLE_NAME)
-            .where({ name })
-        return result[0]
+            .where({ id })
+        return this.toModel(result[0])
     }
 }

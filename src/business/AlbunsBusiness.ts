@@ -8,7 +8,7 @@ import { Album } from "../model/Albuns";
 import { Genre } from "../model/Genre";
 import { InvalidInputError } from "../errors/InvalidInputError";
 import { GenericError } from "../errors/GenericError";
-import { NotFoundError } from "../errors/NotFoundError";
+
 
 
 export class AlbumBusiness {
@@ -23,7 +23,6 @@ export class AlbumBusiness {
     public async createAlbum(name: string, allGenre: string[], token: string) {
         const authenticator = new Authenticator();
         const userData = authenticator.verify(token)
-
         if (
             !name ||
             !allGenre ||
@@ -45,29 +44,19 @@ export class AlbumBusiness {
 
         const bandId = user.getId()
 
-        const albumData = new Album(id, bandId, name)
-
         const genreDatabase = new GenreDatabase()
-        const genre = await genreDatabase.getAllGenres()
+        await genreDatabase.createGenre(new Genre(id, name))
 
-        for (const genres of allGenre) {
-            const result = await genreDatabase.getGenreByName(name)
-            if (result) {
-                await genreDatabase.createGenre(new Genre(id, genres))
-            } else {
-                throw new NotFoundError("Não existe esse genêro")
-            }
-        }
-
+        const albumData = new Album(id, name, bandId)
+        
         const albumDatabase = new AlbunsDatabase();
         await albumDatabase.createAlbum(albumData)
         await albumDatabase.genreAlbum(albumData.getId(), allGenre)
 
         const album = await albumDatabase.getAlbumByName(name)
-        if (album) {
-            throw new GenericError("Esse album foi adicionado");
+        if (album) { 
+            return "Esse album foi adicionado";
         }
-
     }
 }
 

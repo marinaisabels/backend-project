@@ -72,7 +72,7 @@ export class UserDatabase extends BaseDatabase {
         UPDATE ${UserDatabase.TABLE_NAME}
         SET isApproved = 1
         Where id = "${id}"
-        `)
+        `) 
         return result
     }
 }

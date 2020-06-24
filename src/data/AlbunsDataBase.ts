@@ -8,7 +8,7 @@ export class AlbunsDatabase extends BaseDatabase {
     public static TABLE_GENRE_ALBUM: string = "SpotGenreAlbum";
 
     private toModel(dbModel?: any): Album | undefined {
-        return dbModel && new Album(dbModel.id, dbModel.band_id, dbModel.name)
+        return dbModel && new Album(dbModel.id, dbModel.name, dbModel.band_id)
     }
 
     public async createAlbum(album: Album): Promise<void> {
