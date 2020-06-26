@@ -1,5 +1,8 @@
 import { BaseDatabase } from "./BaseDatabase";
 import { Album } from "../model/Albuns";
+import { User } from "../model/User";
+import { Genre } from "../model/Genre";
+
 
 
 export class AlbunsDatabase extends BaseDatabase {
@@ -11,13 +14,12 @@ export class AlbunsDatabase extends BaseDatabase {
         return dbModel && new Album(dbModel.id, dbModel.name, dbModel.band_id)
     }
 
-    public async createAlbum(album: Album): Promise<void> {
-        const albumData = this.toModel(album)
+    public async createAlbum(album: Album, user: User): Promise<void> {
         await this.connection()
             .insert({
-                id: albumData?.getId(),
-                band_id: albumData?.getBandId(),
-                name: albumData?.getName()
+                id: album.getId(),
+                name: album.getName(),
+                band_id: user.getId()
             })
             .into(AlbunsDatabase.TABLE_NAME)
     }
@@ -28,14 +30,12 @@ export class AlbunsDatabase extends BaseDatabase {
             .where({ name })
         return result[0]
     }
-    public async genreAlbum(albumId: string, allGenre: string[]): Promise<void> {
-        for (const genre of allGenre) {
+    public async genreAlbum(albumId: string, genreId: string[]): Promise<void> {
             await this.connection()
                 .insert({
                     album_id: albumId,
-                    genre_id: genre
+                    genre_id: genreId
                 })
                 .into(AlbunsDatabase.TABLE_GENRE_ALBUM)
-        }
     }
 }

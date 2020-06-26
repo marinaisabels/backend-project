@@ -5,7 +5,6 @@ import { IdGenerator } from "../services/IdGenerator";
 import { Authenticator } from "../services/Authenticator";
 import { UserRole } from "../model/User";
 import { Album } from "../model/Albuns";
-import { Genre } from "../model/Genre";
 import { InvalidInputError } from "../errors/InvalidInputError";
 import { GenericError } from "../errors/GenericError";
 
@@ -20,12 +19,12 @@ export class AlbumBusiness {
         private authenticator: Authenticator,
     ) { }
 
-    public async createAlbum(name: string, allGenre: string[], token: string) {
+    public async createAlbum(name: string, musicGenre: string[], token: string) {
         const authenticator = new Authenticator();
         const userData = authenticator.verify(token)
         if (
             !name ||
-            !allGenre ||
+            !musicGenre ||
             !token
         ) {
             throw new InvalidInputError("Informações incompletas");
@@ -40,23 +39,24 @@ export class AlbumBusiness {
         }
 
         const idGenerator = new IdGenerator()
-        const id = idGenerator.generatorId()
+        const albumId = idGenerator.generatorId()
 
         const bandId = user.getId()
 
-        const genreDatabase = new GenreDatabase()
-        await genreDatabase.createGenre(new Genre(id, name))
+        const albumData = new Album(albumId, name, bandId)
 
-        const albumData = new Album(id, name, bandId)
-        
         const albumDatabase = new AlbunsDatabase();
-        await albumDatabase.createAlbum(albumData)
-        await albumDatabase.genreAlbum(albumData.getId(), allGenre)
+        await albumDatabase.createAlbum(albumData, user )
 
-        const album = await albumDatabase.getAlbumByName(name)
-        if (album) { 
-            return "Esse album foi adicionado";
+
+        const genreDatabase = new GenreDatabase()
+        for (let genreId of musicGenre) {
+            const result = await genreDatabase.getGenreById(genreId)
+            if(result){
+                await albumDatabase.genreAlbum(albumData.getId(), musicGenre)
+            }
         }
     }
 }
+
 

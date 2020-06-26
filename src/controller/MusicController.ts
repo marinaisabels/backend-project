@@ -23,7 +23,7 @@ export class MusicController {
             albumId
         } = req.body
         try {
-            await MusicController.MusicBusiness.createMusic(token, name, albumId)
+            await MusicController.MusicBusiness.createMusic(name, albumId, token)
             res.status(200).send({
                 message: "Musica criada com sucesso!"
             })

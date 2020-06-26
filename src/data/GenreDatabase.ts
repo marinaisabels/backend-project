@@ -27,7 +27,7 @@ export class GenreDatabase extends BaseDatabase {
       return result[0]
     }
 
-    public async getGenreById(id: string): Promise<Genre | any> {
+    public async getGenreById(id: string): Promise<Genre | undefined> {
         const result = await this.connection()
             .select("*")
             .from(GenreDatabase.TABLE_NAME)

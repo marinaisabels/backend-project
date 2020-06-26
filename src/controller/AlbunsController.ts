@@ -20,10 +20,10 @@ export class AlbumController {
         const token = req.headers.authorization as string
         const {
             name,
-            allGenre
+            musicGenre, 
         } = req.body
         try {
-            await AlbumController.AlbumBusiness.createAlbum(name, allGenre, token)
+            await AlbumController.AlbumBusiness.createAlbum(name, musicGenre, token)
             res.status(200).send({
                 message: "Album Criado com sucesso!"
             })
