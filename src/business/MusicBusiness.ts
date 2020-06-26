@@ -51,11 +51,6 @@ export class MusicBusiness {
 
         const musicDatabase = new MusicDatabase();
         await musicDatabase.createMusic(musicdata)
- 
-        const music = await musicDatabase.getMusicsByAlbumId(id)
-        if (music) {
-            throw new Error("Essa musica foi adicionada");
 
-        }
     }
 }

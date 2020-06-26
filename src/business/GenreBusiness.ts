@@ -33,7 +33,7 @@ export class GenreBusiness {
         const genreDatabase = new GenreDatabase()
         await genreDatabase.createGenre(genreData)
 
-        const genre = await genreDatabase.getGenreByName(name)
+        const genre = await genreDatabase.getGenreById(id)
         if (genre) {
             throw new GenericError("Esse genêro foi adicionado")
         }

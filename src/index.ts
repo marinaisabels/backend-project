@@ -16,7 +16,7 @@ app.use("/album/", albumRouter);
 app.use("/music/", musicRouter )
 
 
-export default app;
+// export default app;
 
 const server = app.listen(process.env.PORT || 3000, () => {
     if (server) {

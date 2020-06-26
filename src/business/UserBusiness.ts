@@ -1,7 +1,7 @@
 import { IdGenerator } from '../services/IdGenerator'
 import { HashManager } from '../services/HashManager'
 import { UserDatabase } from '../data/UserDatabase'
-import { User, UserRole, stringToUserRole } from '../model/User'
+import { User, UserRole } from '../model/User'
 import { Authenticator } from '../services/Authenticator'
 import { InvalidInputError } from '../errors/InvalidInputError'
 import { GenericError } from '../errors/GenericError'
@@ -14,7 +14,7 @@ export class UserBusiness {
         private authenticator: Authenticator,
         private idGenerator: IdGenerator
     ) { }
-    public async signup(name: string, email: string, nickname: string, password: string, role: UserRole, description?: string) {
+    public async signup(name: string, email: string, nickname: string, password: string) {
 
         if (
             !name ||
@@ -33,13 +33,16 @@ export class UserBusiness {
             throw new InvalidInputError("Email inválido")
         }
 
+        const rolePayListener = UserRole.PAYLISTENER 
+        const roleNoListener = UserRole.NOPAYLISTENER
+
         const idGenerator = new IdGenerator()
         const id = idGenerator.generatorId()
 
         const hashManager = new HashManager()
         const hashPassword = await hashManager.hash(password)
 
-        const user = new User(id, name, email, nickname, hashPassword, role)
+        const user = new User(id, name, email, nickname, hashPassword, rolePayListener, roleNoListener)
 
         const userDatabase = new UserDatabase()
         await userDatabase.createListenerUserAndAdmin(user)
@@ -47,8 +50,7 @@ export class UserBusiness {
         const authenticator = new Authenticator()
         const acessToken = authenticator.generationToken(
             {
-                id,
-                role
+                id
             },
             process.env.ACCESS_TOKEN_EXPIRES_IN
         )
@@ -58,7 +60,7 @@ export class UserBusiness {
         }
     }
 
-    public async signupAdmin(name: string, nickname: string, email: string, password: string, token: string) {
+    public async signupAdmin(name: string, email: string, nickname: string, password: string, token: string) {
 
         if (
             !email ||
@@ -85,7 +87,7 @@ export class UserBusiness {
         const hashManager = new HashManager()
         const hashPassword = await hashManager.hash(password)
 
-        const user = new User(id, name, nickname, email, hashPassword, role)
+        const user = new User(id, name, email, nickname, hashPassword, role)
 
         const userDatabase = new UserDatabase()
         await userDatabase.createListenerUserAndAdmin(user)
@@ -143,7 +145,6 @@ export class UserBusiness {
     }
 
     public async bandSignup(name: string, email: string, nickname: string, password: string, description: string) {
-
         if (
             !email ||
             !name ||
@@ -167,25 +168,25 @@ export class UserBusiness {
         const hashManager = new HashManager()
         const hashPassword = await hashManager.hash(password)
 
-        const band = new User(id, name, email, nickname, hashPassword, stringToUserRole(role), description)
-
+        const band = new User(id, name, email, nickname, hashPassword, role, description)
+        
         const userDatabase = new UserDatabase()
         await userDatabase.createUserBand(band)
     }
 
-    public async getApprovedBands(token: string) {
+    public async approvedBandByAdmin(token: string) {
         const authenticator = new Authenticator()
         const bandData = authenticator.verify(token)
 
-        if (bandData.role !== "ADMIN" || "admin") {
+        if (bandData.role !== "ADMIN") {
             throw new GenericError("Acesso negado!")
         }
 
         const userDatabase = new UserDatabase()
-        const band = await userDatabase.getApprovedBands(token)
+        const band = await userDatabase.approvedBandByAdmin(token)
 
         return band.map(band => {
-            const isApproved = band.getApproved() === true ? true : false
+            const isApproved = band.getApproved() === true 
             return {
                 name: band.getName(),
                 email: band.getEmail(),
@@ -194,27 +195,26 @@ export class UserBusiness {
             }
         })
     }
-    async approvesBand(id: string, token: string){
+    async getApproved(id: string, token: string){
         const authenticator = new Authenticator()
         const bandData = authenticator.verify(token)
 
         const userDatabase = new UserDatabase()
-        const user = await userDatabase.getApproves(bandData.id)
+        const user = await userDatabase.getBandsApproved(bandData.id)
+        const userRole = UserRole.ADMIN
 
         if (!user) {
             throw new NotFoundError("Usuário não encontrado");
         }
-        if (user.getRole() !== UserRole.ADMIN) {
+        if (!userRole) {
             throw new GenericError("Acesso apenas para administradores")
         }
-
-        const band = await userDatabase.getApproves(id)
+        const band = await userDatabase.getBandsApproved(id)
         if (!band) {
             throw new NotFoundError("Band não encontrada");
         }
-        if (band.getApproves() == true) {
-            throw new GenericError("Banda Aprovada!")
+        if (band) {
+          return "Banda Aprovada!"
         }
-
     }
 }

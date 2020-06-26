@@ -2,10 +2,8 @@ import { Request, Response } from "express";
 import { UserBusiness } from '../business/UserBusiness'
 import { Authenticator } from '../services/Authenticator'
 import { UserDatabase } from "../data/UserDatabase";
-import { BaseDatabase } from "../data/BaseDatabase";
 import { HashManager } from "../services/HashManager";
 import { IdGenerator } from "../services/IdGenerator";
-
 
 export class UserController {
     private static UserBusiness = new UserBusiness(
@@ -19,11 +17,10 @@ export class UserController {
             name,
             email,
             nickname,
-            password,
-            role,
+            password
         } = req.body
         try {
-            const result = await UserController.UserBusiness.signup(name, email, nickname, password, role)
+            const result = await UserController.UserBusiness.signup(name, email, nickname, password)
 
             res.status(200).send(
                 result
@@ -38,13 +35,13 @@ export class UserController {
     async signupAdmin(req: Request, res: Response) {
         const {
             name,
-            nickname,
             email,
+            nickname,
             password,
             role,
         } = req.body
         try {
-            const result = await UserController.UserBusiness.signupAdmin(name, nickname, email, password, role)
+            const result = await UserController.UserBusiness.signupAdmin(name,email, nickname, password, role)
             res.status(200).send({
                 result
             })
@@ -56,9 +53,12 @@ export class UserController {
         }
     }
     async login(req: Request, res: Response) {
+        const {
+            nickname,
+            email,
+            password
+        } = req.body
         try {
-            const { nickname, email, password } = req.body
-
             const result = await UserController.UserBusiness.login(nickname, email, password)
 
             res.status(200).send({
@@ -89,12 +89,11 @@ export class UserController {
                 error: err.message
             })
         }
-        
     }
-    async getApprovedBand(req: Request, res: Response) {
+    async approvedBandByAdmin(req: Request, res: Response) {
         const token = req.headers.authorization as string;
         try {
-            const band = await UserController.UserBusiness.getApprovedBands(token)
+            const band = await UserController.UserBusiness.approvedBandByAdmin(token)
             res.status(200).send({
                 band
             })
@@ -104,13 +103,13 @@ export class UserController {
             })
         }
     }
-    async approvesBand(req: Request, res: Response) {
+    async getApprovedBand(req: Request, res: Response) {
         const token = req.headers.authorization as string;
         const { id } = req.body
         try {
-            const band = await UserController.UserBusiness.approvesBand(id, token)
+            const result = await UserController.UserBusiness.getApproved(id, token)
             res.status(200).send({
-                band
+                result
             })
         } catch (err) {
             res.status(err.statusCode || 400).send({

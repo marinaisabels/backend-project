@@ -7,9 +7,7 @@ export class MusicDatabase extends BaseDatabase {
     private toModel(dbModel?: any): Music | undefined {
         return dbModel && new Music(dbModel.id, dbModel.name, dbModel.album_id)
     }
-
     public async createMusic(music: Music): Promise<void> {
-        const musicData = this.toModel(music)
         await this.connection()
         .insert({
             id: music.getId(),

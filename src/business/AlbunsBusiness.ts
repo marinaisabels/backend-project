@@ -5,10 +5,9 @@ import { IdGenerator } from "../services/IdGenerator";
 import { Authenticator } from "../services/Authenticator";
 import { UserRole } from "../model/User";
 import { Album } from "../model/Albuns";
-import { Genre } from "../model/Genre";
 import { InvalidInputError } from "../errors/InvalidInputError";
 import { GenericError } from "../errors/GenericError";
-import { NotFoundError } from "../errors/NotFoundError";
+
 
 
 export class AlbumBusiness {
@@ -20,13 +19,12 @@ export class AlbumBusiness {
         private authenticator: Authenticator,
     ) { }
 
-    public async createAlbum(name: string, allGenre: string[], token: string) {
+    public async createAlbum(name: string, musicGenre: string[], token: string) {
         const authenticator = new Authenticator();
         const userData = authenticator.verify(token)
-
         if (
             !name ||
-            !allGenre ||
+            !musicGenre ||
             !token
         ) {
             throw new InvalidInputError("Informações incompletas");
@@ -41,33 +39,24 @@ export class AlbumBusiness {
         }
 
         const idGenerator = new IdGenerator()
-        const id = idGenerator.generatorId()
+        const albumId = idGenerator.generatorId()
 
         const bandId = user.getId()
 
-        const albumData = new Album(id, bandId, name)
-
-        const genreDatabase = new GenreDatabase()
-        const genre = await genreDatabase.getAllGenres()
-
-        for (const genres of allGenre) {
-            const result = await genreDatabase.getGenreByName(name)
-            if (result) {
-                await genreDatabase.createGenre(new Genre(id, genres))
-            } else {
-                throw new NotFoundError("Não existe esse genêro")
-            }
-        }
+        const albumData = new Album(albumId, name, bandId)
 
         const albumDatabase = new AlbunsDatabase();
-        await albumDatabase.createAlbum(albumData)
-        await albumDatabase.genreAlbum(albumData.getId(), allGenre)
+        await albumDatabase.createAlbum(albumData, user )
 
-        const album = await albumDatabase.getAlbumByName(name)
-        if (album) {
-            throw new GenericError("Esse album foi adicionado");
+
+        const genreDatabase = new GenreDatabase()
+        for (let genreId of musicGenre) {
+            const result = await genreDatabase.getGenreById(genreId)
+            if(result){
+                await albumDatabase.genreAlbum(albumData.getId(), musicGenre)
+            }
         }
-
     }
 }
+
 

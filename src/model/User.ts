@@ -32,11 +32,11 @@ export class User {
         return this.role;
     }
 
-    public getDescription(): string{
+    public getDescription(): string {
         return this.description as string;
     }
 
-    public getApproved(): boolean{
+    public getApproved(): boolean {
         return this.isApproved as boolean;
     }
 }
@@ -62,3 +62,4 @@ export const stringToUserRole = (input: string): UserRole => {
             throw new Error("Opção inválida");
     }
 };
+
