@@ -41,7 +41,7 @@
     "express": "4.17.0",
     "jest": "^26.0.1",
     "jsonwebtoken": "^8.5.1",
-    "knex": "^0.21.1",
+    "knex": "^2.4.0",
     "lbn-lambda-express": "^0.1.10",
     "moment": "^2.26.0",
     "mysql": "^2.18.1",
